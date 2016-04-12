@@ -19,6 +19,13 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
 
+import java.io.*;
+import java.lang.StringBuilder;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 @Designable(value="SmartChart", image = "/smartchart.png", description="Uses built-in graph and manual list storing. Includes a reset button (wow!)")
 @SupportedTypes({dashfx.lib.data.SmartValueTypes.Number})
 @Category("General")
@@ -50,7 +57,7 @@ public class SmartChart
     {
         setAlignment(Pos.CENTER);
 
-        chartImpl = new ChartImpl();
+        chartImpl = new ChartImpl(this);
         add(chartImpl, 0, 0, 3, 1);
 
         Button resetButton = new Button("Reset Graph");
@@ -63,6 +70,18 @@ public class SmartChart
             }
         });
         add(resetButton, 0, 1, 3, 1);
+
+        Button saveButton = new Button("Save Data");
+        saveButton.setOnAction(new EventHandler<ActionEvent>()
+        {
+            @Override
+            public void handle(ActionEvent event)
+            {
+                chartImpl.save();
+            }
+        });
+        add(saveButton, 0, 2, 3, 1);
+
     }
 
     public void registered(final DataCoreProvider provider)
@@ -101,7 +120,9 @@ class ChartImpl extends LineChart<Number, Number>
     private Series series = new Series();
     private long startTimeMillis;
 
-    public ChartImpl()
+    SmartChart chart;
+
+    public ChartImpl(SmartChart chart)
     {
         super(new NumberAxis(), new NumberAxis());
         setAnimated(false);
@@ -109,6 +130,7 @@ class ChartImpl extends LineChart<Number, Number>
         ((NumberAxis)getYAxis()).setForceZeroInRange(false);
         setLegendVisible(false);
         getData().add(this.series);
+        this.chart = chart;
     }
 
     public void addValue(double x)
@@ -131,5 +153,39 @@ class ChartImpl extends LineChart<Number, Number>
     {
         this.series.getData().clear();
     }
+
+    public void save()
+    {
+        StringBuilder sb = new StringBuilder();
+        for(Object x:this.series.getData()) {
+            Data<Double,Long> y = (Data<Double, Long>) x;
+            sb.append(y.getXValue());
+            sb.append(",");
+            sb.append(y.getYValue());
+            sb.append('\n');
+        }
+
+        String fileName = System.getProperty("user.home") + "\\" + this.chart.getName().replace(' ', '_') + ".csv";
+
+        try {
+            // Create the empty file with default permissions, etc.
+            Files.createFile(Paths.get(fileName));
+        } catch (FileAlreadyExistsException x) {
+            System.err.format("file named %s" +
+                    " already exists%n", fileName);
+        } catch (IOException x) {
+            // Some other sort of failure, such as permissions.
+            System.err.format("createFile error: %s%n", x);
+        }
+
+
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName), "utf-8"))) {
+            writer.write(sb.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 }
 
