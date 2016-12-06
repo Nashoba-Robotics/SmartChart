@@ -144,7 +144,7 @@ class ChartImpl extends LineChart<Number, Number>
 
 
         this.series.getData().add(new Data(currentTime, x));
-        if (this.series.getData().size() > 500) {
+        if (this.series.getData().size() > 10000) {
             this.series.getData().remove(0);
         }
     }
