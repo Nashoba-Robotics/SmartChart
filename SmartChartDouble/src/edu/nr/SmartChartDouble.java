@@ -23,6 +23,12 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 
 import java.util.ArrayList;
+import java.io.*;
+import java.lang.StringBuilder;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @Designable(value="SmartChartDouble", image = "/smartchart.png", description="Uses built-in graph and manual list storing. Includes a reset button (wow!)")
 @SupportedTypes({SmartValueTypes.String})
@@ -55,7 +61,7 @@ public class SmartChartDouble
     {
         setAlignment(Pos.CENTER);
 
-        chartImpl = new ChartImpl();
+        chartImpl = new ChartImpl(this);
         add(chartImpl, 0, 0);
 
         Button resetButton = new Button("Reset Graph");
@@ -67,6 +73,16 @@ public class SmartChartDouble
         });
         add(resetButton, 0, 1, 3, 1);
 
+        Button saveButton = new Button("Save Data");
+        saveButton.setOnAction(new EventHandler<ActionEvent>()
+        {
+            @Override
+            public void handle(ActionEvent event)
+            {
+                chartImpl.save();
+            }
+        });
+        add(saveButton, 0, 2, 3, 1);
     }
 
     public void registered(final DataCoreProvider provider)
@@ -107,25 +123,18 @@ public class SmartChartDouble
 
         double mouseStartY;
 
-        public ChartImpl()
+        SmartChartDouble chart;
+
+        public ChartImpl(SmartChartDouble chart)
         {
             super(new NumberAxis(), new NumberAxis());
 
             setAnimated(false);
-            ((NumberAxis)getXAxis()).setForceZeroInRange(false);
-            ((NumberAxis)getYAxis()).setForceZeroInRange(false);
+            ((NumberAxis) getXAxis()).setForceZeroInRange(false);
+            ((NumberAxis) getYAxis()).setForceZeroInRange(false);
             setLegendVisible(false);
 
-            super.setOnMousePressed(event -> {
-                System.out.println("Mouse started");
-                mouseStartY = event.getY();
-            });
-
-            super.setOnMouseReleased(event -> {
-                System.err.println("Start scale: " + getScaleY());
-                setScaleY(getScaleY() * (1 + (mouseStartY - event.getY()) / 20));
-                System.err.println("Set scale to " + getScaleY());
-            });
+            this.chart = chart;
         }
 
         int countNumDelimiter(String str, char delimiter) {
@@ -197,6 +206,41 @@ public class SmartChartDouble
             series.forEach(s -> {
                 s.getData().clear();
             });
+        }
+
+        public void save()
+        {
+            StringBuilder sb = new StringBuilder();
+            series.forEach(s -> {
+                for(Data<Number, Number> x:s.getData()) {
+                    sb.append(x.getXValue());
+                    sb.append(",");
+                    sb.append(x.getYValue());
+                    sb.append(",,");
+                }
+                sb.append('\n');
+            });
+
+
+            String fileName = System.getProperty("user.home") + "\\" + this.chart.getName().replace(' ', '_') + ".csv";
+
+            try {
+                // Create the empty file with default permissions, etc.
+                Files.createFile(Paths.get(fileName));
+            } catch (FileAlreadyExistsException x) {
+                System.err.format("file named %s" +
+                        " already exists%n", fileName);
+            } catch (IOException x) {
+                // Some other sort of failure, such as permissions.
+                System.err.format("createFile error: %s%n", x);
+            }
+
+
+            try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName), "utf-8"))) {
+                writer.write(sb.toString());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
 
