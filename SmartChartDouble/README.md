@@ -6,4 +6,4 @@ As we've used SmartDashboard 2.0 (SFX) over the last year, we've found that the 
 - Graph can show multiple data sets simultaneously, by sending SmartDashboard a string with the format "[num1]:[num2]:[num3]". Eg. "1.0:2.3:5.6:"
 - Graph can export data to a csv file in the location USER\_HOME\_DIRECTORY/SmartDashboard/VARIABLE\_NAME.csv
 
-To install, download the most recent release, and move the .jar to your /sfx/plugins/ folder.
+To install, download the most recent release, and move the .jar to your USER_HOME_DIRECTORY/wpilib/tools/plugins/ folder.
