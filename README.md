@@ -8,10 +8,9 @@ There are two versions, SmartChart and SmartChartDouble. The only difference bet
 - Graph can be reset
 - Graph can export data to a csv file in the location USER\_HOME\_DIRECTORY/SmartDashboard/VARIABLE\_NAME.csv
 - Graph can show multiple data sets simultaneously, by sending SmartDashboard a string with the format "[num1]:[num2]:[num3]:...". Eg. "1.0:2.3:5.6"
-- If not showing multiple data sets simultaneously, can zoom in on graph by clicking and dragging on the graph.
+- Can zoom in on graph by clicking and dragging on the graph.
 
 ##Planned features:
-- Zooming while showing multiple data sets
 - Scrolling
 
 ##Installation

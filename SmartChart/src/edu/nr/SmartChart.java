@@ -39,61 +39,23 @@ import javax.swing.event.ChangeEvent;
 @Designable(value="SmartChart", image = "/smartchart.png", description="Uses built-in graph and manual list storing. Includes a reset button (wow!)")
 @SupportedTypes({dashfx.lib.data.SmartValueTypes.Number})
 @Category("General")
-public class SmartChart
-        extends GridPane
-        implements Control, ChangeListener<Object>
+public class SmartChart extends GenericSmartChart
 {
-    StringProperty name = new SimpleStringProperty();
-
-    @Designable(value="Name", description="The name the control binds to")
-    public StringProperty nameProperty()
-    {
-        return this.name;
-    }
-
-    public String getName()
-    {
-        return this.name.getValue();
-    }
-
-    public void setName(String value)
-    {
-        this.name.setValue(value);
-    }
 
     NRChart chart;
 
     public SmartChart()
     {
-        setAlignment(Pos.CENTER);
-
-        System.out.println("Here1");
-
+        super();
         chart = new NRChart(this);
         add(chart, 0, 0, 3, 1);
 
-        System.out.println("Here2");
-
         Button resetButton = new Button("Reset Graph");
-        resetButton.setOnAction(new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent event)
-            {
-                chart.reset();
-            }
-        });
+        resetButton.setOnAction(event -> chart.reset());
         add(resetButton, 0, 1, 3, 1);
 
         Button saveButton = new Button("Save Data");
-        saveButton.setOnAction(new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent event)
-            {
-                chart.save();
-            }
-        });
+        saveButton.setOnAction(event -> chart.save());
         add(saveButton, 0, 2, 3, 1);
 
         final Rectangle zoomRect = new Rectangle();
@@ -143,38 +105,15 @@ public class SmartChart
         add(resetZoomButton, 0, 4, 3, 1);
 
         add(prepareToZoomButton, 0, 5, 3, 1);
-
-
     }
 
-    public void registered(final DataCoreProvider provider)
-    {
-        if (getName() != null) {
-            provider.getObservable(getName()).addListener(this);
-        }
-        this.name.addListener(new ChangeListener<String>()
-        {
-            public void changed(ObservableValue<? extends String> ov, String t, String t1)
-            {
-                if (t != null) {
-                    provider.getObservable(t).removeListener(SmartChart.this);
-                }
-                provider.getObservable(t1).addListener(SmartChart.this);
-            }
-        });
-    }
-
+    @Override
     public void changed(ObservableValue<? extends Object> ov, Object old, Object t1)
     {
         SmartValue sv = (SmartValue)ov;
         double x = sv.getData().asNumber().doubleValue();
 
         chart.addValue(Double.valueOf(x));
-    }
-
-    public Node getUi()
-    {
-        return this;
     }
 }
 
