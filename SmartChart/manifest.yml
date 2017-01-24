@@ -1,9 +1,12 @@
 API: 0.1
 Name: SmartChart
 Description: SmartChart plugin
-Version: 1.0.0
-# Please generate your own unique UUID and replace it below
+Version: 2.1
 Plugin ID: e5a40031-6713-47fb-8757-900eb1027769
 Controls:
 -
+  Name: SmartChart
   Class: edu.nr.SmartChart
+-
+  Name: SmartChartDouble
+  Class: edu.nr.SmartChartDouble
