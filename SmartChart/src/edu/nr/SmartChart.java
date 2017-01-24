@@ -6,9 +6,11 @@ import dashfx.lib.controls.Designable;
 import dashfx.lib.data.DataCoreProvider;
 import dashfx.lib.data.SmartValue;
 import dashfx.lib.data.SupportedTypes;
+import javafx.beans.InvalidationListener;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableBooleanValue;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -18,13 +20,21 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
+import javafx.beans.binding.BooleanBinding;
+
 
 import java.io.*;
 import java.lang.StringBuilder;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
+import javafx.geometry.Point2D;
+
+import javax.swing.event.ChangeEvent;
 
 @Designable(value="SmartChart", image = "/smartchart.png", description="Uses built-in graph and manual list storing. Includes a reset button (wow!)")
 @SupportedTypes({dashfx.lib.data.SmartValueTypes.Number})
@@ -51,14 +61,18 @@ public class SmartChart
         this.name.setValue(value);
     }
 
-    ChartImpl chartImpl;
+    NRChart chart;
 
     public SmartChart()
     {
         setAlignment(Pos.CENTER);
 
-        chartImpl = new ChartImpl(this);
-        add(chartImpl, 0, 0, 3, 1);
+        System.out.println("Here1");
+
+        chart = new NRChart(this);
+        add(chart, 0, 0, 3, 1);
+
+        System.out.println("Here2");
 
         Button resetButton = new Button("Reset Graph");
         resetButton.setOnAction(new EventHandler<ActionEvent>()
@@ -66,7 +80,7 @@ public class SmartChart
             @Override
             public void handle(ActionEvent event)
             {
-                chartImpl.reset();
+                chart.reset();
             }
         });
         add(resetButton, 0, 1, 3, 1);
@@ -77,10 +91,59 @@ public class SmartChart
             @Override
             public void handle(ActionEvent event)
             {
-                chartImpl.save();
+                chart.save();
             }
         });
         add(saveButton, 0, 2, 3, 1);
+
+        final Rectangle zoomRect = new Rectangle();
+        zoomRect.setManaged(false);
+        zoomRect.setFill(Color.LIGHTSEAGREEN.deriveColor(0, 1, 1, 0.5));
+        getChildren().add(zoomRect);
+
+        chart.setUpZooming(zoomRect);
+
+        final Button zoomButton = new Button("Zoom");
+        final Button resetZoomButton = new Button("Reset Zoom");
+        zoomButton.setOnAction(event -> chart.doZoom(zoomRect));
+        resetZoomButton.setOnAction(event -> {
+            final NumberAxis xAxis = (NumberAxis)chart.getXAxis();
+            xAxis.setLowerBound(chart.getLowestX());
+            xAxis.setUpperBound(chart.getHighestX());
+            final NumberAxis yAxis = (NumberAxis)chart.getYAxis();
+            yAxis.setLowerBound(chart.getLowestY());
+            yAxis.setUpperBound(chart.getHighestY());
+
+            zoomRect.setWidth(0);
+            zoomRect.setHeight(0);
+        });
+
+        final Button prepareToZoomButton = new Button("Prepare to zoom");
+
+        prepareToZoomButton.setOnAction(event -> {
+            if(chart.isAutoZooming()) {
+                chart.setAutoZooming(false);
+                prepareToZoomButton.setText("Finish zooming");
+            } else {
+                chart.setAutoZooming(true);
+                prepareToZoomButton.setText("Prepare to zoom");
+            }
+        });
+
+
+        final BooleanBinding disableControls =
+                zoomRect.widthProperty().lessThan(5)
+                        .or(zoomRect.heightProperty().lessThan(5)).or(chart.isAutoZooming);
+        zoomButton.disableProperty().bind(disableControls);
+        resetZoomButton.disableProperty().bind(chart.isAutoZooming);
+
+
+        add(zoomButton, 0, 3, 3, 1);
+
+        add(resetZoomButton, 0, 4, 3, 1);
+
+        add(prepareToZoomButton, 0, 5, 3, 1);
+
 
     }
 
@@ -106,86 +169,12 @@ public class SmartChart
         SmartValue sv = (SmartValue)ov;
         double x = sv.getData().asNumber().doubleValue();
 
-        chartImpl.addValue(Double.valueOf(x));
+        chart.addValue(Double.valueOf(x));
     }
 
     public Node getUi()
     {
         return this;
     }
-}
-
-class ChartImpl extends LineChart<Number, Number>
-{
-    private Series series = new Series();
-    private long startTimeMillis;
-
-    SmartChart chart;
-
-    public ChartImpl(SmartChart chart)
-    {
-        super(new NumberAxis(), new NumberAxis());
-        setAnimated(false);
-        ((NumberAxis)getXAxis()).setForceZeroInRange(false);
-        ((NumberAxis)getYAxis()).setForceZeroInRange(false);
-        setLegendVisible(false);
-        getData().add(this.series);
-        this.chart = chart;
-    }
-
-    public void addValue(double x)
-    {
-        if(this.series.getData().size() == 0)
-        {
-            startTimeMillis = System.currentTimeMillis();
-        }
-
-        double currentTime = (System.currentTimeMillis() - startTimeMillis)/1000d;
-
-
-        this.series.getData().add(new Data(currentTime, x));
-        if (this.series.getData().size() > 10000) {
-            this.series.getData().remove(0);
-        }
-    }
-
-    public void reset()
-    {
-        this.series.getData().clear();
-    }
-
-    public void save()
-    {
-        StringBuilder sb = new StringBuilder();
-        for(Object x:this.series.getData()) {
-            Data<Double,Long> y = (Data<Double, Long>) x;
-            sb.append(y.getXValue());
-            sb.append(",");
-            sb.append(y.getYValue());
-            sb.append('\n');
-        }
-
-        String fileName = System.getProperty("user.home") + "\\" + this.chart.getName().replace(' ', '_') + ".csv";
-
-        try {
-            // Create the empty file with default permissions, etc.
-            Files.createFile(Paths.get(fileName));
-        } catch (FileAlreadyExistsException x) {
-            System.err.format("file named %s" +
-                    " already exists%n", fileName);
-        } catch (IOException x) {
-            // Some other sort of failure, such as permissions.
-            System.err.format("createFile error: %s%n", x);
-        }
-
-
-        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName), "utf-8"))) {
-            writer.write(sb.toString());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-
 }
 
