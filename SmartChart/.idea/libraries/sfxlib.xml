@@ -1,8 +1,8 @@
 <component name="libraryTable">
   <library name="sfxlib">
     <CLASSES>
-      <root url="jar://$USER_HOME$/wpilib/tools/sfxlib.jar!/" />
-      <root url="jar://$USER_HOME$/wpilib/tools/sfxmeta.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/sfxlib.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/sfxmeta.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
