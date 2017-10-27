@@ -1,5 +1,7 @@
 package edu.nr;
 
+import java.util.ArrayList;
+
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -123,5 +125,7 @@ public abstract class GenericNRChart<T> extends LineChart<Number, Number> {
     public abstract double getHighestX();
 
     public abstract double getHighestY();
+    
+    public abstract ArrayList<Double> getAverage(Rectangle zoomRect);
 
 }

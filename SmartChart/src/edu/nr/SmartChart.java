@@ -92,6 +92,11 @@ public class SmartChart extends GenericSmartChart
             }
         });
 
+        final Button averageButton = new Button("Average");
+        
+        averageButton.setOnAction(event -> chart.getAverage(zoomRect));
+        
+        
 
         final BooleanBinding disableControls =
                 zoomRect.widthProperty().lessThan(5)
@@ -105,6 +110,8 @@ public class SmartChart extends GenericSmartChart
         add(resetZoomButton, 0, 4, 3, 1);
 
         add(prepareToZoomButton, 0, 5, 3, 1);
+        
+        add(averageButton, 0, 6, 3, 1);
     }
 
     @Override
