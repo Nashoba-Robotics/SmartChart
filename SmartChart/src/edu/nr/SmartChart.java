@@ -16,6 +16,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.chart.Chart;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.control.Button;
@@ -35,6 +36,8 @@ import javafx.scene.shape.Rectangle;
 import javafx.geometry.Point2D;
 
 import javax.swing.event.ChangeEvent;
+
+import com.sun.javafx.charts.ChartLayoutAnimator;
 
 @Designable(value="SmartChart", image = "/smartchart.png", description="Uses built-in graph and manual list storing. Includes a reset button (wow!)")
 @SupportedTypes({dashfx.lib.data.SmartValueTypes.Number})
@@ -103,15 +106,17 @@ public class SmartChart extends GenericSmartChart
                         .or(zoomRect.heightProperty().lessThan(5)).or(chart.isAutoZooming);
         zoomButton.disableProperty().bind(disableControls);
         resetZoomButton.disableProperty().bind(chart.isAutoZooming);
-
-
+        
+        
         add(zoomButton, 0, 3, 3, 1);
-
+        
         add(resetZoomButton, 0, 4, 3, 1);
-
+        
         add(prepareToZoomButton, 0, 5, 3, 1);
         
         add(averageButton, 0, 6, 3, 1);
+        
+        
     }
 
     @Override

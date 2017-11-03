@@ -50,7 +50,6 @@ public abstract class GenericSmartChart extends GridPane
 
     }
 
-
     public final void registered(final DataCoreProvider provider)
     {
         if (getName() != null) {
