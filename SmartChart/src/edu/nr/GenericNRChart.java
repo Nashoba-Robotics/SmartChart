@@ -126,6 +126,6 @@ public abstract class GenericNRChart<T> extends LineChart<Number, Number> {
 
     public abstract double getHighestY();
     
-    public abstract ArrayList<Double> getAverage(Rectangle zoomRect);
+    public abstract String getAverage(String LowXLim, String UpXLim, String LowYLim, String UpYLim);
 
 }

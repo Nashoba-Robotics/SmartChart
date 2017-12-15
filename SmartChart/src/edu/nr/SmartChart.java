@@ -20,6 +20,7 @@ import javafx.scene.chart.Chart;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.beans.binding.BooleanBinding;
 
@@ -38,6 +39,7 @@ import javafx.geometry.Point2D;
 import javax.swing.event.ChangeEvent;
 
 import com.sun.javafx.charts.ChartLayoutAnimator;
+import javafx.scene.text.Text;
 
 @Designable(value="SmartChart", image = "/smartchart.png", description="Uses built-in graph and manual list storing. Includes a reset button (wow!)")
 @SupportedTypes({dashfx.lib.data.SmartValueTypes.Number})
@@ -54,7 +56,9 @@ public class SmartChart extends GenericSmartChart
         add(chart, 0, 0, 3, 1);
 
         Button resetButton = new Button("Reset Graph");
-        resetButton.setOnAction(event -> chart.reset());
+        resetButton.setOnAction(event -> {
+            chart.reset();
+        });
         add(resetButton, 0, 1, 3, 1);
 
         Button saveButton = new Button("Save Data");
@@ -93,13 +97,39 @@ public class SmartChart extends GenericSmartChart
                 chart.setAutoZooming(true);
                 prepareToZoomButton.setText("Prepare to zoom");
             }
-        });
+        });//42
+
+        TextField LowerXLimit = new TextField();
+        LowerXLimit.setText("Lower X Limit");
+        add(LowerXLimit, 3, 3, 3, 1);
+
+        TextField UpperXLimit = new TextField();
+        UpperXLimit.setText("Upper X Limit");
+        add(UpperXLimit, 3, 4, 3, 1);
+
+        TextField LowerYLimit = new TextField();
+        LowerYLimit.setText("Lower Y Limit");
+        add(LowerYLimit, 3, 5, 3, 1);
+
+        TextField UpperYLimit = new TextField();
+        UpperYLimit.setText("Upper Y Limit");
+        add(UpperYLimit, 3, 6, 3, 1);
 
         final Button averageButton = new Button("Average");
-        
-        averageButton.setOnAction(event -> chart.getAverage(zoomRect));
-        
-        
+
+        Text AverageText = new Text();
+        AverageText.setText("NA");
+        add(AverageText, 3,2,3,1);
+
+        averageButton.setOnAction(event -> {
+            String LowXLim = LowerXLimit.getText();
+            String UpXLim = UpperXLimit.getText();
+            String LowYLim = LowerYLimit.getText();
+            String UpYLim = UpperYLimit.getText();
+
+            String value = chart.getAverage(LowXLim, UpXLim, LowYLim, UpYLim);
+            AverageText.setText(value);
+        });
 
         final BooleanBinding disableControls =
                 zoomRect.widthProperty().lessThan(5)
@@ -114,7 +144,7 @@ public class SmartChart extends GenericSmartChart
         
         add(prepareToZoomButton, 0, 5, 3, 1);
         
-        add(averageButton, 0, 6, 3, 1);
+        add(averageButton, 3, 1, 3, 1);
         
         
     }

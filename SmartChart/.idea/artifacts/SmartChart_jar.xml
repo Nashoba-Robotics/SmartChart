@@ -1,6 +1,6 @@
 <component name="ArtifactManager">
   <artifact type="jar" name="SmartChart:jar">
-    <output-path>$PROJECT_DIR$/out/artifacts/SmartChart_jar</output-path>
+    <output-path>$USER_HOME$/wpilib/tools/plugins</output-path>
     <root id="archive" name="SmartChart.jar">
       <element id="directory" name="META-INF">
         <element id="file-copy" path="$PROJECT_DIR$/META-INF/MANIFEST.MF" />

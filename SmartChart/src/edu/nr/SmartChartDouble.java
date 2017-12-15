@@ -18,9 +18,11 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Text;
 
 @Designable(value="SmartChartDouble", image = "/smartchart.png", description="Uses built-in graph and manual list storing. Includes a reset button (wow!)")
 @SupportedTypes({SmartValueTypes.String})
@@ -79,6 +81,43 @@ public class SmartChartDouble extends GenericSmartChart
             }
         });
 
+        TextField LowerXLimit = new TextField();
+        LowerXLimit.setText("Lower X Limit");
+        add(LowerXLimit, 3, 3, 3, 1);
+
+        TextField UpperXLimit = new TextField();
+        UpperXLimit.setText("Upper X Limit");
+        add(UpperXLimit, 3, 4, 3, 1);
+
+        TextField LowerYLimit = new TextField();
+        LowerYLimit.setText("Lower Y Limit");
+        add(LowerYLimit, 3, 5, 3, 1);
+
+        TextField UpperYLimit = new TextField();
+        UpperYLimit.setText("Upper Y Limit");
+        add(UpperYLimit, 3, 6, 3, 1);
+
+
+        final Button averageButton = new Button("Average");
+
+        Text AverageText = new Text();
+        AverageText.setText("NA");
+        add(AverageText, 3,2,3,1);
+
+        averageButton.setOnAction(event -> {
+            String LowXLim = LowerXLimit.getText();
+            String UpXLim = UpperXLimit.getText();
+            String LowYLim = LowerYLimit.getText();
+            String UpYLim = UpperYLimit.getText();
+
+            String value = chart.getAverage(LowXLim, UpXLim, LowYLim, UpYLim);
+            AverageText.setText(value);
+        });
+
+
+
+
+
 
         final BooleanBinding disableControls =
                 zoomRect.widthProperty().lessThan(5)
@@ -92,6 +131,8 @@ public class SmartChartDouble extends GenericSmartChart
         add(resetZoomButton, 0, 4, 3, 1);
 
         add(prepareToZoomButton, 0, 5, 3, 1);
+
+        add(averageButton, 3,1,3,1);
     }
 
 

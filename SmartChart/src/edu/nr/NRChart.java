@@ -126,44 +126,47 @@ class NRChart extends GenericNRChart {
 	}
 
 	@Override
-	public ArrayList<Double> getAverage(Rectangle zoomRect) {
-		ArrayList<Double> finalList = new ArrayList<Double>();
-		if (this.series.getData().size() == 0) {
-			finalList.add(110.0);
-			return finalList;
-		}
+	public String getAverage(String LowXLim, String UpXLim, String LowYLim, String UpYLim) {
+		double finalList = -1.0;
+	/*	if (zoomRect.getWidth() == 0 && zoomRect.getHeight() == 0) {
+			finalList = 110.0;
+			String finalValueString = String.valueOf(finalList);
+			return finalValueString;
+		}*/
+
+        double xLowLim = Double.parseDouble(LowXLim);
+        double xUpLim = Double.parseDouble(UpXLim);
+        double yLowLim = Double.parseDouble(LowYLim);
+        double yUpLim = Double.parseDouble(UpYLim);
+
 		ArrayList<Data<Double, Double>> goodPoints = new ArrayList<Data<Double, Double>>();
 		for (int i = 0; i < this.series.getData().size(); i++) {
 			
 			//find if the value fits within the zoom rectangles and add to goodPoints
-			if (((Data<Double, Double>) this.series.getData().get(i)).getXValue() > zoomRect.getX()
-					&& ((Data<Double, Double>) this.series.getData().get(i)).getXValue() < zoomRect.getX()
-							+ zoomRect.getWidth()
-					&& ((Data<Double, Double>) this.series.getData().get(i)).getYValue() < zoomRect.getY()
-					&& ((Data<Double, Double>) this.series.getData().get(i)).getYValue() > zoomRect.getY()
-							- zoomRect.getHeight()) {
+			if (((Data<Double, Double>) this.series.getData().get(i)).getXValue() > xLowLim
+					&& ((Data<Double, Double>) this.series.getData().get(i)).getXValue() < xUpLim
+					&& ((Data<Double, Double>) this.series.getData().get(i)).getYValue() > yLowLim
+					&& ((Data<Double, Double>) this.series.getData().get(i)).getYValue() < yUpLim) {
 				goodPoints.add((Data<Double, Double>) this.series.getData().get(i));
 			}
 		}
+
+		double Print = 0;
 		double areaSum = 0;
 		double yAvg;
 		double dx;
 		for (int i = 0; i < goodPoints.size() - 1; i++) {
-			yAvg = (((Data<Double, Double>) this.series.getData().get(i)).getYValue()
-					+ ((Data<Double, Double>) this.series.getData().get(i + 1)).getYValue()) / 2;
-			dx = ((Data<Double, Double>) this.series.getData().get(i + 1)).getXValue()
-					- ((Data<Double, Double>) this.series.getData().get(i)).getXValue();
-			areaSum += yAvg * dx;
+			yAvg = ((goodPoints.get(i)).getYValue() + (goodPoints.get(i + 1)).getYValue()) / 2;
+			dx = ((goodPoints.get(i + 1)).getXValue() - (goodPoints.get(i)).getXValue());
+			areaSum += (yAvg * dx);
+			if (i==0){
+				Print = dx;
+			}
 		}
-		double dxTotal = ((Data<Double, Double>) this.series.getData().get(goodPoints.size() - 1)).getXValue()
-				- ((Data<Double, Double>) this.series.getData().get(0)).getXValue();
-		finalList.add(areaSum / dxTotal);
-		
-		//print all of the 
-		for(int i = 0; i < finalList.size() - 1; i++) {
-			chart.setAccessibleText(Double.toString(finalList.get(i)));
-		}
-		return finalList;
+		double dxTotal = goodPoints.get(goodPoints.size() - 1).getXValue() - goodPoints.get(0).getXValue();
+		finalList = Math.round(10000.0*areaSum / dxTotal)/10000.0;
+        String finalValueString = String.valueOf(finalList);
+		return finalValueString;
 	}
 
 }
